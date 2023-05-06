@@ -118,7 +118,6 @@ loginFormEl.addEventListener("submit", (event) => {
     const testLogged = userList.filter(
       (e) => e.userId === loginIdEl.value && e.userPw === loginPwEl.value
     );
-    console.log(testLogged);
 
     if (testLogged.length) {
       bodyClass.remove("login", "show");
@@ -143,7 +142,6 @@ loginFormEl.addEventListener("submit", (event) => {
 });
 
 // 회원가입 과정
-
 let isAllValidated = false;
 signupFormEl.addEventListener("submit", (event) => {
   signInComplete(event);
@@ -250,29 +248,32 @@ passwordChangeBtnEl.addEventListener("click", () => {
   if (nowPass) {
     if (nowPass === loggedUser[0].userPw) {
       let newPw = prompt("새로운 비밀번호");
-      if (loggedUser[0].userPw === newPw) {
-        alert("이전과 다른 비밀번호를 설정해주세요");
-      } else if (newPw.length < 8) {
-        alert("비밀번호는 8자 이상이여야 합니다");
-      } else {
-        const pwCheck = prompt("비밀번호 확인");
-        if (newPw === pwCheck) {
-          const newUserList = userList.filter(
-            (e) => loggedUser[0].userId !== e.userId
-          );
-          const newUser = { ...loggedUser[0], userPw: newPw };
-          newUserList.push(newUser);
-          localStorage.setItem("loggedUser", JSON.stringify([newUser]));
-          loggedUser = JSON.parse(localStorage.getItem("loggedUser"));
-          localStorage.setItem("userList", JSON.stringify(newUserList));
-          userList = newUserList;
+      if (newPw) {
+        if (loggedUser[0].userPw === newPw) {
+          alert("이전과 다른 비밀번호를 설정해주세요");
+        } else if (newPw?.length < 8) {
+          alert("비밀번호는 8자 이상이여야 합니다");
         } else {
-          alert("비밀번호 재확인이 일치하지 않습니다.");
+          const pwCheck = prompt("비밀번호 확인");
+          if (newPw === pwCheck) {
+            const newUserList = userList.filter(
+              (e) => loggedUser[0].userId !== e.userId
+            );
+            const newUser = { ...loggedUser[0], userPw: newPw };
+            newUserList.push(newUser);
+            localStorage.setItem("loggedUser", JSON.stringify([newUser]));
+            loggedUser = JSON.parse(localStorage.getItem("loggedUser"));
+            localStorage.setItem("userList", JSON.stringify(newUserList));
+            userList = newUserList;
+            alert("비밀번호 변경이 완료되었습니다.");
+          } else {
+            alert("비밀번호 재확인이 일치하지 않습니다.");
+          }
         }
       }
+    } else {
+      alert("비밀번호가 일치하지 않습니다.");
     }
-  } else {
-    alert("비밀번호가 일치하지 않습니다.");
   }
 });
 //사이드바 오픈
