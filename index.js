@@ -3,6 +3,7 @@ let loggedUser = JSON.parse(localStorage.getItem("loggedUser"));
 let isLoggedIn = JSON.parse(localStorage.getItem("isLoggedIn"));
 let userList = JSON.parse(localStorage.getItem("userList"));
 let isDarkMode = JSON.parse(localStorage.getItem("darkMode"));
+let boardList = JSON.parse(localStorage.getItem("boardList"));
 // bodyclass
 const bodyClass = document.body.classList;
 //darkmode
@@ -14,9 +15,9 @@ const modalEl = document.querySelector(".modal");
 const sideOpenBtnEl = document.querySelector(".sidebar-btn");
 const findIdModalOpenBtnEl = document.querySelector(".find.btn");
 //mypage
-const userName = loggedUser?.[0]?.userName;
-const userNumber = loggedUser?.[0]?.userNumber;
-const userId = loggedUser?.[0]?.userId;
+const userName = loggedUser?.userName;
+const userNumber = loggedUser?.userNumber;
+const userId = loggedUser?.userId;
 const modalOpenBtns = document.querySelectorAll(".modal-btns > .btn");
 const sideEl = document.querySelector("aside.side-bar");
 const myPageName = sideEl.querySelector(".mypage-name");
@@ -45,6 +46,17 @@ const signupNumberEl = document.querySelector(".signup.phone-number");
 const signupPwEl = document.querySelector(".signup.password");
 const signupPwCheckEl = document.querySelector(".signup.password.check");
 const signupBtnEl = document.querySelector(".signup.btn");
+//board-area
+const boardAreaEl = document.querySelector(".board-area");
+const sliderAreaEl = boardAreaEl.querySelector(".slider-area");
+const writingBtnEl = boardAreaEl.querySelector(".writing-toggle.btn");
+const boardFormEl = boardAreaEl.querySelector(".boardform");
+const boardAreaTitleEl = boardAreaEl.querySelector(".board-area--title");
+const boardAreaQuestionEl = boardAreaEl.querySelector(".board-area--question");
+const boardAreaSubmitBtnEl = boardAreaEl.querySelector(
+  ".board-area--submit-btn"
+);
+const postList = document.querySelector(".post-list");
 
 // 로그인 상태를 구분하여 화면 로드
 if (isLoggedIn) {
@@ -69,7 +81,13 @@ if (userList === null) {
   userList = [];
   localStorage.setItem("userList", JSON.stringify(userList));
 }
-
+//boardList가 비었을때 빈 배열 저장
+if (boardList === null) {
+  boardList = [];
+  localStorage.setItem("boardList", JSON.stringify(boardList));
+} else {
+  boardListSet(boardList);
+}
 // 다크모드 전환
 darkModeBtn.addEventListener("click", () => {
   isDarkMode = isDarkMode === true ? false : true;
@@ -111,7 +129,6 @@ findIdModalOpenBtnEl.addEventListener("click", () => {
 });
 
 // 로그인
-
 loginFormEl.addEventListener("submit", (event) => {
   submitRenderPrevent(event);
   if (loginIdEl.value.length >= 5 && loginPwEl.value.length >= 8) {
@@ -123,12 +140,12 @@ loginFormEl.addEventListener("submit", (event) => {
       bodyClass.remove("login", "show");
       bodyClass.add("loggedin");
       inputClear(loginIdEl, loginPwEl);
-      localStorage.setItem("loggedUser", JSON.stringify(testLogged));
+      localStorage.setItem("loggedUser", JSON.stringify(...testLogged));
       localStorage.setItem("isLoggedIn", JSON.stringify(true));
       loggedUser = JSON.parse(localStorage.getItem("loggedUser"));
-      myPageId.textContent = loggedUser[0].userId;
-      myPageName.textContent = loggedUser[0].userName;
-      myPageNumber.textContent = loggedUser[0].userNumber;
+      myPageId.textContent = loggedUser.userId;
+      myPageName.textContent = loggedUser.userName;
+      myPageNumber.textContent = loggedUser.userNumber;
     } else {
       alert("아이디와 패스워드를 확인해주세요.");
       inputClear(loginPwEl);
@@ -227,18 +244,26 @@ logoutBtnEl.addEventListener("click", () => {
   localStorage.setItem("loggedUser", JSON.stringify(null));
   localStorage.setItem("isLoggedIn", JSON.stringify(false));
   guestInfo.classList.remove("hide");
+  writingBtnEl.classList.toggle("active");
+  sliderAreaEl.classList.toggle("move");
+  writingBtnEl.textContent = "글쓰기";
+  inputClear(boardAreaTitleEl, boardAreaQuestionEl);
 });
 
 // 회원탈퇴
 secessionBtnEl.addEventListener("click", () => {
   if (confirm("정말 회원을 탈퇴하시겠습니까?")) {
-    userList = userList.filter((e) => loggedUser[0].userId !== e.userId);
+    userList = userList.filter((e) => loggedUser.userId !== e.userId);
     localStorage.setItem("userList", JSON.stringify(userList));
     bodyClass.remove("loggedin", "show");
     sideEl.classList.remove("open");
     localStorage.setItem("loggedUser", JSON.stringify(null));
     localStorage.setItem("isLoggedIn", JSON.stringify(false));
     guestInfo.classList.remove("hide");
+    writingBtnEl.classList.toggle("active");
+    sliderAreaEl.classList.toggle("move");
+    writingBtnEl.textContent = "글쓰기";
+    inputClear(boardAreaTitleEl, boardAreaQuestionEl);
     alert("회원탈퇴가 정상적으로 이루어졌습니다.");
   }
 });
@@ -246,10 +271,10 @@ secessionBtnEl.addEventListener("click", () => {
 passwordChangeBtnEl.addEventListener("click", () => {
   const nowPass = prompt("현재 비밀번호를 입력해주세요.");
   if (nowPass) {
-    if (nowPass === loggedUser[0].userPw) {
+    if (nowPass === loggedUser.userPw) {
       let newPw = prompt("새로운 비밀번호");
       if (newPw) {
-        if (loggedUser[0].userPw === newPw) {
+        if (loggedUser.userPw === newPw) {
           alert("이전과 다른 비밀번호를 설정해주세요");
         } else if (newPw?.length < 8) {
           alert("비밀번호는 8자 이상이여야 합니다");
@@ -257,9 +282,9 @@ passwordChangeBtnEl.addEventListener("click", () => {
           const pwCheck = prompt("비밀번호 확인");
           if (newPw === pwCheck) {
             const newUserList = userList.filter(
-              (e) => loggedUser[0].userId !== e.userId
+              (e) => loggedUser.userId !== e.userId
             );
-            const newUser = { ...loggedUser[0], userPw: newPw };
+            const newUser = { ...loggedUser, userPw: newPw };
             newUserList.push(newUser);
             localStorage.setItem("loggedUser", JSON.stringify([newUser]));
             loggedUser = JSON.parse(localStorage.getItem("loggedUser"));
@@ -287,6 +312,46 @@ window.addEventListener("keydown", (e) => {
     console.log(userList);
   }
 });
+
+//글쓰기 버튼 조정
+writingBtnEl.addEventListener("click", () => {
+  if (writingBtnEl.classList.contains("active")) {
+    if (confirm("작성중인 내용이 삭제됩니다. 정말 취소하시겠습니까?")) {
+      writingBtnEl.textContent = "글쓰기";
+      inputClear(boardAreaTitleEl, boardAreaQuestionEl);
+    } else {
+      return;
+    }
+  } else {
+    writingBtnEl.textContent = "취소";
+  }
+  writingBtnEl.classList.toggle("active");
+  sliderAreaEl.classList.toggle("move");
+});
+// 게시글 등록 버튼
+boardFormEl.addEventListener("submit", (e) => {
+  submitRenderPrevent(e);
+  if (
+    boardAreaTitleEl.value.length > 0 &&
+    boardAreaQuestionEl.value.length > 0
+  ) {
+    boardList = JSON.parse(localStorage.getItem("boardList"));
+    const newPost = {
+      userName: loggedUser.userName,
+      date: timeNow(),
+      postTitle: boardAreaTitleEl.value,
+      postQuestion: boardAreaQuestionEl.value,
+    };
+    boardList.push(newPost);
+    boardListSet([newPost]);
+    localStorage.setItem("boardList", JSON.stringify(boardList));
+    writingBtnEl.classList.toggle("active");
+    sliderAreaEl.classList.toggle("move");
+    writingBtnEl.textContent = "글쓰기";
+    inputClear(boardAreaTitleEl, boardAreaQuestionEl);
+  }
+});
+
 // function
 function submitRenderPrevent(event) {
   event.preventDefault();
@@ -382,4 +447,54 @@ function signInComplete() {
   } else {
     alert("올바른 형식으로 작성해주세요.");
   }
+}
+
+function timeNow() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth() + 1; // 월은 0부터 시작하므로 1을 더해줍니다.
+  const date = now.getDate();
+  const hour = now.getHours();
+  const minute = now.getMinutes();
+
+  return `${year}년 ${month < 10 ? "0" + month : month}월 ${
+    date < 10 ? "0" + date : date
+  }일 ${hour < 10 ? "0" + hour : hour}시 ${
+    minute < 10 ? "0" + minute : minute
+  }분`;
+}
+
+function boardListSet(board) {
+  board.forEach((e) => {
+    console.log(e);
+    const post = document.createElement("li");
+    post.classList.add("post");
+
+    const time = document.createElement("span");
+    time.classList.add("post-time");
+    time.textContent = e.date;
+
+    const title = document.createElement("h3");
+    title.classList.add("post-title");
+    title.textContent = e.postTitle;
+
+    const question = document.createElement("div");
+    question.classList.add("post-question");
+    question.textContent = e.postQuestion;
+
+    const name = document.createElement("span");
+    name.classList.add("post-user-name");
+    name.textContent = e.userName;
+
+    const detail = document.createElement("div");
+    detail.classList.add("post-detail");
+    detail.append(title, question);
+
+    const info = document.createElement("div");
+    info.classList.add("post-info");
+    info.append(time, name);
+
+    post.append(detail, info);
+    postList.append(post);
+  });
 }

@@ -9,12 +9,7 @@
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
     />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Do+Hyeon&display=swap"
-      rel="stylesheet"
-    />
+
     <link
       oncontextmenu="return false"
       ondragstart="return false"
@@ -124,6 +119,30 @@
           <input type="text" class="find-id-number" placeholder="전화번호" />
           <div class="found-id"></div>
           <button type="submit" class="find-id btn">검색</button>
+        </form>
+      </div>
+    </section>
+    <section class="board-area">
+      <button class="writing-toggle btn">글쓰기</button>
+      <div class="slider-area">
+        <ul class="post-list"></ul>
+        <form class="boardform">
+          <div class="boardform-inputbox">
+            <input
+              type="text"
+              class="board-area--title"
+              placeholder="제목을 입력해주세요"
+            />
+            <textarea
+              name=""
+              id=""
+              cols="50"
+              rows="10"
+              class="board-area--question"
+              placeholder="내용을 입력해주세요"
+            ></textarea>
+            <button type="submit" class="board-area--submit-btn">등록</button>
+          </div>
         </form>
       </div>
     </section>
