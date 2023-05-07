@@ -211,7 +211,7 @@ header .header-link span {
   font-size: 13px;
 }
 header .header-link span:hover {
-  color: white;
+  color: var(--dark-color);
 }
 
 /* modal */
