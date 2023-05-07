@@ -312,13 +312,6 @@ sideOpenBtnEl.addEventListener("click", () => {
   bodyClass.add("show");
   sideEl.classList.toggle("open");
 });
-window.addEventListener("keydown", (e) => {
-  if (e.code === "Escape") {
-    console.log("userList", userList);
-    console.log("loggedUser", loggedUser);
-    console.log("boardList", boardList);
-  }
-});
 
 //글쓰기 버튼 조정
 writingBtnEl.addEventListener("click", () => {
