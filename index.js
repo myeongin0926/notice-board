@@ -1,3 +1,4 @@
+import postListData from "./data.js";
 // 기본사항
 let loggedUser = JSON.parse(localStorage.getItem("loggedUser"));
 let isLoggedIn = JSON.parse(localStorage.getItem("isLoggedIn"));
@@ -53,9 +54,6 @@ const writingBtnEl = boardAreaEl.querySelector(".writing-toggle.btn");
 const boardFormEl = boardAreaEl.querySelector(".boardform");
 const boardAreaTitleEl = boardAreaEl.querySelector(".board-area--title");
 const boardAreaQuestionEl = boardAreaEl.querySelector(".board-area--question");
-const boardAreaSubmitBtnEl = boardAreaEl.querySelector(
-  ".board-area--submit-btn"
-);
 const postList = document.querySelector(".post-list");
 
 // 로그인 상태를 구분하여 화면 로드
@@ -83,8 +81,9 @@ if (userList === null) {
 }
 //boardList가 비었을때 빈 배열 저장
 if (boardList === null) {
-  boardList = [];
+  boardList = postListData;
   localStorage.setItem("boardList", JSON.stringify(boardList));
+  boardListSet(boardList);
 } else {
   boardListSet(boardList);
 }
@@ -143,6 +142,7 @@ loginFormEl.addEventListener("submit", (event) => {
       localStorage.setItem("loggedUser", JSON.stringify(...testLogged));
       localStorage.setItem("isLoggedIn", JSON.stringify(true));
       loggedUser = JSON.parse(localStorage.getItem("loggedUser"));
+      boardListSet(boardList);
       myPageId.textContent = loggedUser.userId;
       myPageName.textContent = loggedUser.userName;
       myPageNumber.textContent = loggedUser.userNumber;
@@ -244,8 +244,8 @@ logoutBtnEl.addEventListener("click", () => {
   localStorage.setItem("loggedUser", JSON.stringify(null));
   localStorage.setItem("isLoggedIn", JSON.stringify(false));
   guestInfo.classList.remove("hide");
-  writingBtnEl.classList.toggle("active");
-  sliderAreaEl.classList.toggle("move");
+  writingBtnEl.classList.remove("active");
+  sliderAreaEl.classList.remove("move");
   writingBtnEl.textContent = "글쓰기";
   inputClear(boardAreaTitleEl, boardAreaQuestionEl);
 });
@@ -253,20 +253,26 @@ logoutBtnEl.addEventListener("click", () => {
 // 회원탈퇴
 secessionBtnEl.addEventListener("click", () => {
   if (confirm("정말 회원을 탈퇴하시겠습니까?")) {
+    boardList = boardList.filter((e) => loggedUser.userId !== e.userId);
+    boardListSet(boardList);
+    localStorage.setItem("boardList", JSON.stringify(boardList));
     userList = userList.filter((e) => loggedUser.userId !== e.userId);
     localStorage.setItem("userList", JSON.stringify(userList));
     bodyClass.remove("loggedin", "show");
     sideEl.classList.remove("open");
     localStorage.setItem("loggedUser", JSON.stringify(null));
     localStorage.setItem("isLoggedIn", JSON.stringify(false));
+    loggedUser = JSON.parse(localStorage.getItem("loggedUser"));
     guestInfo.classList.remove("hide");
-    writingBtnEl.classList.toggle("active");
-    sliderAreaEl.classList.toggle("move");
+    writingBtnEl.classList.remove("active");
+    sliderAreaEl.classList.remove("move");
     writingBtnEl.textContent = "글쓰기";
     inputClear(boardAreaTitleEl, boardAreaQuestionEl);
+
     alert("회원탈퇴가 정상적으로 이루어졌습니다.");
   }
 });
+
 // 비밀번호 변경
 passwordChangeBtnEl.addEventListener("click", () => {
   const nowPass = prompt("현재 비밀번호를 입력해주세요.");
@@ -286,7 +292,7 @@ passwordChangeBtnEl.addEventListener("click", () => {
             );
             const newUser = { ...loggedUser, userPw: newPw };
             newUserList.push(newUser);
-            localStorage.setItem("loggedUser", JSON.stringify([newUser]));
+            localStorage.setItem("loggedUser", JSON.stringify(newUser));
             loggedUser = JSON.parse(localStorage.getItem("loggedUser"));
             localStorage.setItem("userList", JSON.stringify(newUserList));
             userList = newUserList;
@@ -308,8 +314,9 @@ sideOpenBtnEl.addEventListener("click", () => {
 });
 window.addEventListener("keydown", (e) => {
   if (e.code === "Escape") {
-    console.log(userList);
-    console.log(userList);
+    console.log("userList", userList);
+    console.log("loggedUser", loggedUser);
+    console.log("boardList", boardList);
   }
 });
 
@@ -336,14 +343,14 @@ boardFormEl.addEventListener("submit", (e) => {
     boardAreaQuestionEl.value.length > 0
   ) {
     boardList = JSON.parse(localStorage.getItem("boardList"));
-    const newPost = {
+    boardList.push({
       userName: loggedUser.userName,
       date: timeNow(),
       postTitle: boardAreaTitleEl.value,
       postQuestion: boardAreaQuestionEl.value,
-    };
-    boardList.push(newPost);
-    boardListSet([newPost]);
+      userId: loggedUser.userId,
+    });
+    boardListSet(boardList);
     localStorage.setItem("boardList", JSON.stringify(boardList));
     writingBtnEl.classList.toggle("active");
     sliderAreaEl.classList.toggle("move");
@@ -452,7 +459,7 @@ function signInComplete() {
 function timeNow() {
   const now = new Date();
   const year = now.getFullYear();
-  const month = now.getMonth() + 1; // 월은 0부터 시작하므로 1을 더해줍니다.
+  const month = now.getMonth() + 1;
   const date = now.getDate();
   const hour = now.getHours();
   const minute = now.getMinutes();
@@ -465,36 +472,50 @@ function timeNow() {
 }
 
 function boardListSet(board) {
+  postList.innerHTML = "";
   board.forEach((e) => {
-    console.log(e);
     const post = document.createElement("li");
     post.classList.add("post");
+    post.addEventListener("click", (e) => {
+      post.classList.toggle("spread");
+    });
 
     const time = document.createElement("span");
     time.classList.add("post-time");
     time.textContent = e.date;
-
     const title = document.createElement("h3");
     title.classList.add("post-title");
     title.textContent = e.postTitle;
-
     const question = document.createElement("div");
     question.classList.add("post-question");
     question.textContent = e.postQuestion;
-
     const name = document.createElement("span");
     name.classList.add("post-user-name");
     name.textContent = e.userName;
-
     const detail = document.createElement("div");
     detail.classList.add("post-detail");
     detail.append(title, question);
-
     const info = document.createElement("div");
     info.classList.add("post-info");
-    info.append(time, name);
+    const del = document.createElement("button");
+    del.classList.add("post-delbtn");
+    del.textContent = "삭제";
+
+    del.addEventListener("click", (delBtn) => {
+      if (confirm("정말 삭제하실건가요?")) {
+        boardList = boardList.filter((post) => post !== e);
+        localStorage.setItem("boardList", JSON.stringify(boardList));
+        boardListSet(boardList);
+      }
+    });
+
+    if (loggedUser?.userId == e.userId) {
+      info.append(time, name, del);
+    } else {
+      info.append(time, name);
+    }
 
     post.append(detail, info);
-    postList.append(post);
+    postList.prepend(post);
   });
 }
